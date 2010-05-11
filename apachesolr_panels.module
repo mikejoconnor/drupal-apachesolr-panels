@@ -1,0 +1,61 @@
+<?php
+
+/**
+ * @file
+ * Integrates Apache Solr Search with Panels.
+ *
+ * Author:
+ *   Joakim Stai (ximo) <http://drupal.org/user/88701)
+ *   Kevin Bridges (cyberswat) <http://drupal.org/user/27802>
+ */
+
+module_load_include('inc', 'search', 'search.pages');
+
+/**
+ * Implementation of hook_ctools_plugin_directory().
+ */
+function apachesolr_panels_ctools_plugin_directory($module, $plugin) {
+  if ($module == 'ctools' && !empty($plugin)) {
+    return "plugins/$plugin";
+  }
+}
+
+/**
+ * Implementation of hook_search().
+ */
+function apachesolr_panels_search($op = 'search', $keys = NULL) {
+  if ($op == 'search') {
+    $search = apachesolr_panels_get_search();
+    try {
+      $results = apachesolr_search_execute($search['keys'], $search['filters'], $search['sort'], $search['path'], $search['page']);
+      return $results;
+    }
+    catch (Exception $e) {
+      watchdog('Apache Solr', nl2br(check_plain($e->getMessage())), NULL, WATCHDOG_ERROR);
+      apachesolr_failure(t('Solr search'), $search['keys']);
+    }
+  }
+  else {
+    apachesolr_search_search($op, $keys);
+  }
+}
+
+/**
+ * Temporarily store data about the current search.
+ */
+function apachesolr_panels_set_search($new = array()) {
+  static $data = array('keys' => '', 'filters' => '', 'sort' => '', 'path' => '', 'page' => 0);
+
+  if (!empty($new)) {
+    $data = array_merge($data, $new);
+  }
+
+  return $data;
+}
+
+/**
+ * Fetch data about the current search.
+ */
+function apachesolr_panels_get_search() {
+  return apachesolr_panels_set_search();
+}
