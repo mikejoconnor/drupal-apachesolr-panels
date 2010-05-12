@@ -9,8 +9,7 @@ if (module_exists('apachesolr_search')) {
     'category' => t('Apache Solr Search'),
     'defaults' => array(
       'destination' => '',
-      'prompt' => '',
-      'show_keys' => FALSE,
+      'show_keys' => TRUE,
     ),
     'no title override' => TRUE,
     'render last' => TRUE,
@@ -22,22 +21,54 @@ if (module_exists('apachesolr_search')) {
  */
 function apachesolr_panels_search_form_content_type_render($subtype, $conf, $panel_args, $context) {
   $search = apachesolr_panels_get_search();
-  if ($conf['destination']) {
-
-  }
-  $promt = !empty($conf['prompt']) ? $conf['prompt'] : NULL;
 
   $block = new stdClass();
   $block->module  = 'apachesolr_panels';
-  $block->delta   = 'search_form';
+  $block->delta   = 'apachesolr_panels_search_form';
   $block->title   = '';
-  $block->content = drupal_get_form('search_form', $search['path'], $search['keys'], 'apachesolr_panels', $prompt);
+  $block->content = drupal_get_form('apachesolr_panels_search_form', $conf);
 
   return $block;
 }
 
 /**
- * .
+ * User search form.
+ */
+function apachesolr_panels_search_form(&$form_state, &$conf) {
+  global $base_url;
+
+  $form['#action'] = $base_url .'/'. $conf['destination'];
+
+  $form['keys'] = array('#title' => t('Search'), '#type' => 'textfield');
+
+	if ($conf['show_keys']) {
+	  $search = apachesolr_panels_get_search();
+		$form['keys']['#default_value'] = $search['keys'];
+	}
+
+  $form['submit'] = array('#type' => 'submit', '#value' => t('Search'));
+
+  return $form;
+}
+
+/**
+ * Check for empty searches.
+ */
+function apachesolr_panels_search_form_validate($form_id, $form_values, $form){
+  if (empty($form_values['values']['keys'])) {
+    form_set_error('keys', t('Please enter some keywords.'));
+  }
+}
+
+/**
+ * Change redirect path for the form.
+ */
+function apachesolr_panels_search_form_submit($form, &$form_state) {
+  $form_state['redirect'] = $form['#action'] .'/'. $form_state['values']['keys'];
+}
+
+/**
+ * Panel plugin edit form.
  */
 function apachesolr_panels_search_form_content_type_edit_form(&$form, &$form_state) {
   $conf = $form_state['conf'];
@@ -55,4 +86,13 @@ function apachesolr_panels_search_form_content_type_edit_form(&$form, &$form_sta
   );
 
   return $form;
+}
+
+/**
+ * Handle submission of edit form.
+ */
+function apachesolr_panels_search_form_content_type_edit_form_submit(&$form, &$form_state) {
+  foreach (array_keys($form_state['plugin']['defaults']) as $key) {
+    $form_state['conf'][$key] = $form_state['values'][$key];
+  }
 }
