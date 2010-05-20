@@ -8,6 +8,7 @@ if (module_exists('apachesolr_search')) {
     'description' => t('Search form for Apache Solr.'),
     'category' => t('Apache Solr Search'),
     'defaults' => array(
+      'title' => '',
       'destination' => '',
       'show_keys' => TRUE,
     ),
@@ -25,7 +26,7 @@ function apachesolr_panels_search_form_content_type_render($subtype, $conf, $pan
   $block = new stdClass();
   $block->module  = 'apachesolr_panels';
   $block->delta   = 'apachesolr_panels_search_form';
-  $block->title   = '';
+  $block->title   = $conf['title'];
   $block->content = drupal_get_form('apachesolr_panels_search_form', $conf);
 
   return $block;
@@ -72,6 +73,12 @@ function apachesolr_panels_search_form_submit($form, &$form_state) {
  */
 function apachesolr_panels_search_form_content_type_edit_form(&$form, &$form_state) {
   $conf = $form_state['conf'];
+
+  $form['title'] = array(
+    '#title' => t('Title'),
+    '#type' => 'textfield',
+    '#default_value' => $conf['title'],
+  );
 
   $form['destination'] = array(
     '#title' => t('Search page'),
