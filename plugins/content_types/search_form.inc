@@ -65,7 +65,7 @@ function apachesolr_panels_search_form_form(&$form_state, $conf) {
   $form = drupal_retrieve_form('search_block_form', $form_state);
 
   $form['#action'] = $GLOBALS['base_url'] .'/'. $conf['destination'];
-  $form['#submit'] = 'apachesolr_panels_search_form_koong_foo_submit';
+  $form['#submit'] = 'apachesolr_panels_search_form_form_submit';
 
   if ($conf['show_keys'] && ($search = apachesolr_panels_get_search())) {
     $form['search_block_form']['#default_value'] = $search['keys'];
