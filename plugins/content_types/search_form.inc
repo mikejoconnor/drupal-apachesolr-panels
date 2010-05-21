@@ -20,51 +20,12 @@ if (module_exists('apachesolr_search')) {
  * .
  */
 function apachesolr_panels_search_form_content_type_render($subtype, $conf, $panel_args, $context) {
-  $search = apachesolr_panels_get_search();
-
   $block = new stdClass();
   $block->module  = 'apachesolr_panels';
   $block->delta   = 'apachesolr_panels_search_form';
   $block->title   = '';
-  $block->content = drupal_get_form('apachesolr_panels_search_form', $conf);
-
+  $block->content = drupal_get_form('apachesolr_panels_search_form_form', $conf);
   return $block;
-}
-
-/**
- * User search form.
- */
-function apachesolr_panels_search_form(&$form_state, &$conf) {
-  global $base_url;
-
-  $form['#action'] = $base_url .'/'. $conf['destination'];
-
-  $form['keys'] = array('#title' => t('Search'), '#type' => 'textfield');
-
-	if ($conf['show_keys']) {
-	  $search = apachesolr_panels_get_search();
-		$form['keys']['#default_value'] = $search['keys'];
-	}
-
-  $form['submit'] = array('#type' => 'submit', '#value' => t('Search'));
-
-  return $form;
-}
-
-/**
- * Check for empty searches.
- */
-function apachesolr_panels_search_form_validate($form_id, $form_values, $form){
-  if (empty($form_values['values']['keys'])) {
-    form_set_error('keys', t('Please enter some keywords.'));
-  }
-}
-
-/**
- * Change redirect path for the form.
- */
-function apachesolr_panels_search_form_submit($form, &$form_state) {
-  $form_state['redirect'] = $form['#action'] .'/'. $form_state['values']['keys'];
 }
 
 /**
@@ -95,4 +56,27 @@ function apachesolr_panels_search_form_content_type_edit_form_submit(&$form, &$f
   foreach (array_keys($form_state['plugin']['defaults']) as $key) {
     $form_state['conf'][$key] = $form_state['values'][$key];
   }
+}
+
+/**
+ * Search form.
+ */
+function apachesolr_panels_search_form_form(&$form_state, $conf) {
+  $form = drupal_retrieve_form('search_block_form', $form_state);
+
+  $form['#action'] = $GLOBALS['base_url'] .'/'. $conf['destination'];
+  $form['#submit'] = 'apachesolr_panels_search_form_koong_foo_submit';
+
+  if ($conf['show_keys'] && ($search = apachesolr_panels_get_search())) {
+    $form['search_block_form']['#default_value'] = $search['keys'];
+  }
+
+  return $form;
+}
+
+/**
+ * Redirect to specified destination.
+ */
+function apachesolr_panels_search_form_form_submit($form, &$form_state) {
+  $form_state['redirect'] = $form['#action'] .'/'. $form_state['values']['keys'];
 }
