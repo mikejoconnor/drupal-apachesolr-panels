@@ -11,7 +11,6 @@ if (module_exists('apachesolr_search')) {
       'destination' => '',
       'show_keys' => TRUE,
     ),
-    'no title override' => TRUE,
     'render last' => TRUE,
   );
 }
