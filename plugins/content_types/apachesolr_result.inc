@@ -29,7 +29,7 @@ if (module_exists('apachesolr_search')) {
 /**
  * Render the search results.
  */
-function apachesolr_panels_apachesolr_results_content_type_render($subtype, $conf, $args, $context) {
+function apachesolr_panels_apachesolr_result_content_type_render($subtype, $conf, $args, $context) {
   $block = new stdClass();
   $block->module  = 'apachesolr_panels';
   $block->delta   = 'results';
@@ -93,7 +93,7 @@ function apachesolr_panels_apachesolr_results_content_type_render($subtype, $con
 /**
  * Return an edit form for the pane's settings.
  */
-function apachesolr_panels_apachesolr_results_content_type_edit_form(&$form, &$form_state) {
+function apachesolr_panels_apachesolr_result_content_type_edit_form(&$form, &$form_state) {
   $conf = $form_state['conf'];
 
   $form['keys_action'] = array(
@@ -241,7 +241,7 @@ function apachesolr_panels_apachesolr_results_content_type_edit_form(&$form, &$f
 /**
  * Handle submission of edit form.
  */
-function apachesolr_panels_apachesolr_results_content_type_edit_form_submit(&$form, &$form_state) {
+function apachesolr_panels_apachesolr_result_content_type_edit_form_submit(&$form, &$form_state) {
   foreach (array_keys($form_state['plugin']['defaults']) as $key) {
     $form_state['conf'][$key] = $form_state['values'][$key];
   }
