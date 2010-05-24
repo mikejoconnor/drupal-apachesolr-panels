@@ -11,26 +11,25 @@ if (module_exists('apachesolr_search')) {
       'destination' => '',
       'show_keys' => TRUE,
     ),
-    'render last' => TRUE,
   );
 }
 
 /**
- * .
+ * Render a search form for Apache Solr.
  */
-function apachesolr_panels_search_form_content_type_render($subtype, $conf, $panel_args, $context) {
+function apachesolr_panels_apachesolr_form_content_type_render($subtype, $conf, $panel_args, $context) {
   $block = new stdClass();
   $block->module  = 'apachesolr_panels';
-  $block->delta   = 'apachesolr_panels_search_form';
+  $block->delta   = 'form';
   $block->title   = '';
-  $block->content = drupal_get_form('apachesolr_panels_search_form_form', $conf);
+  $block->content = drupal_get_form('apachesolr_panels_form_search_form', $conf);
   return $block;
 }
 
 /**
  * Panel plugin edit form.
  */
-function apachesolr_panels_search_form_content_type_edit_form(&$form, &$form_state) {
+function apachesolr_panels_apachesolr_form_content_type_edit_form(&$form, &$form_state) {
   $conf = $form_state['conf'];
 
   $form['destination'] = array(
@@ -51,7 +50,7 @@ function apachesolr_panels_search_form_content_type_edit_form(&$form, &$form_sta
 /**
  * Handle submission of edit form.
  */
-function apachesolr_panels_search_form_content_type_edit_form_submit(&$form, &$form_state) {
+function apachesolr_panels_apachesolr_form_content_type_edit_form_submit(&$form, &$form_state) {
   foreach (array_keys($form_state['plugin']['defaults']) as $key) {
     $form_state['conf'][$key] = $form_state['values'][$key];
   }
@@ -60,13 +59,13 @@ function apachesolr_panels_search_form_content_type_edit_form_submit(&$form, &$f
 /**
  * Search form.
  */
-function apachesolr_panels_search_form_form(&$form_state, $conf) {
+function apachesolr_panels_search_form(&$form_state, $conf) {
   $form = drupal_retrieve_form('search_block_form', $form_state);
 
   $form['#action'] = $GLOBALS['base_url'] .'/'. $conf['destination'];
-  $form['#submit'] = 'apachesolr_panels_search_form_form_submit';
+  $form['#submit'] = 'apachesolr_panels_form_search_form_submit';
 
-  if ($conf['show_keys'] && ($search = apachesolr_panels_get_search())) {
+  if ($conf['show_keys'] && ($search = apachesolr_panels_static_search_cache())) {
     $form['search_block_form']['#default_value'] = $search['keys'];
   }
 
@@ -76,6 +75,6 @@ function apachesolr_panels_search_form_form(&$form_state, $conf) {
 /**
  * Redirect to specified destination.
  */
-function apachesolr_panels_search_form_form_submit($form, &$form_state) {
+function apachesolr_panels_search_form_submit($form, &$form_state) {
   $form_state['redirect'] = $form['#action'] .'/'. $form_state['values']['keys'];
 }

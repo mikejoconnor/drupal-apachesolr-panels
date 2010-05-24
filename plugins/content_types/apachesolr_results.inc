@@ -23,13 +23,14 @@ if (module_exists('apachesolr_search')) {
       'substitute' => TRUE,
     ),
     'all contexts' => TRUE,
+    'weight' => -10,
   );
 }
 
 /**
- * Render the custom content type.
+ * Render the search results.
  */
-function apachesolr_panels_search_results_content_type_render($subtype, $conf, $args, $contexts) {
+function apachesolr_panels_apachesolr_results_content_type_render($subtype, $conf, $args, $contexts) {
   $block = new stdClass();
   $block->module  = 'apachesolr_panels';
   $block->delta   = 'results';
@@ -51,6 +52,7 @@ function apachesolr_panels_search_results_content_type_render($subtype, $conf, $
       $conf[$key] = ctools_context_keyword_substitute($conf[$key], array(), $contexts);
     }
 
+    // Alter the search part depending on selected action.
     if ($conf[$key .'_action'] == 'append') {
       $search[$key] .= ' '. $conf[$key];
     }
@@ -59,20 +61,17 @@ function apachesolr_panels_search_results_content_type_render($subtype, $conf, $
     }
   }
 
-  // Now we can add remaining search parts.
+  // Add remaining search parts.
   $menu_item = menu_get_item();
-  $search['path'] = $menu_item['path'];
+  $search['path'] = $menu_item['href'];
   $search['page'] = isset($_GET['page']) ? $_GET['page'] : 0;
-
-  // Store search for later use in other functions.
-  apachesolr_panels_set_search($search);
 
   if (!empty($conf['log'])) {
     watchdog('search', '%keys (@type).', array('%keys' => $search['keys'], '@type' => t('Search')), WATCHDOG_NOTICE, l(t('results'), $_GET['q']));
   }
 
-  // Perform search.
-  $results = search_data($search['keys'], 'apachesolr_panels');
+  // Execute the search.
+  $results = search_data($search, 'apachesolr_panels');
 
   if ($results) {
     $block->title = t('Search results');
@@ -93,23 +92,23 @@ function apachesolr_panels_search_results_content_type_render($subtype, $conf, $
 }
 
 /**
- * Return an edit form for custom type settings.
+ * Return an edit form for the pane's settings.
  */
-function apachesolr_panels_search_results_content_type_edit_form(&$form, &$form_state) {
+function apachesolr_panels_apachesolr_results_content_type_edit_form(&$form, &$form_state) {
   $conf = $form_state['conf'];
 
-  // @todo What would CTools do?
+  // Fetch available contexts.
   $keys_contexts = array('none' => t('None'));
   if (!empty($form_state['contexts'])) {
     foreach ($form_state['contexts'] as $context) {
-      if ($context->type == 'string') {
+      if ($context->type == 'apachesolr') {
         $keys_contexts[$context->id] = $context->identifier;
       }
     }
   }
 
-  $form['keys_context'] = array(
-    '#title' => t('Use keys from context'),
+  $form['context'] = array(
+    '#title' => t('Context'),
     '#type' => 'select',
     '#options' => $keys_contexts,
     '#default_value' => count($keys_contexts) > 0 ? end(array_keys($keys_contexts)) : $conf['keys_context'],
@@ -233,6 +232,8 @@ function apachesolr_panels_search_results_content_type_edit_form(&$form, &$form_
       '#collapsed' => TRUE,
     );
 
+    $header = array(t('Keyword'), t('Value'));
+
     $rows = array();
     foreach ($form_state['contexts'] as $context) {
       foreach (ctools_context_get_converters('%' . check_plain($context->keyword) . ':', $context) as $keyword => $title) {
@@ -242,7 +243,7 @@ function apachesolr_panels_search_results_content_type_edit_form(&$form, &$form_
         );
       }
     }
-    $header = array(t('Keyword'), t('Value'));
+
     $form['contexts']['context'] = array('#value' => theme('table', $header, $rows));
   }
 
@@ -252,7 +253,7 @@ function apachesolr_panels_search_results_content_type_edit_form(&$form, &$form_
 /**
  * Handle submission of edit form.
  */
-function apachesolr_panels_search_results_content_type_edit_form_submit(&$form, &$form_state) {
+function apachesolr_panels_apachesolr_results_content_type_edit_form_submit(&$form, &$form_state) {
   foreach (array_keys($form_state['plugin']['defaults']) as $key) {
     $form_state['conf'][$key] = $form_state['values'][$key];
   }

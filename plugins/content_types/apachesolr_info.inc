@@ -7,35 +7,34 @@ if (module_exists('apachesolr_search')) {
     'description' => t('Information about an Apache Solr search.'),
     'icon' => 'icon_search.png',
     'category' => t('Apache Solr Search'),
-    'hook theme' => 'apachesolr_panels_search_info_theme',
-    'render last' => TRUE,
+    'hook theme' => 'apachesolr_panels_apachesolr_info_theme',
   );
 }
 
 /**
- * .
+ * Delegated implementation of hook_theme().
  */
-function apachesolr_panels_search_info_theme(&$theme) {
-  $theme['apachesolr_panels_search_info'] = array('arguments' => array('response' => NULL, 'search' => NULL));
+function apachesolr_panels_apachesolr_info_theme(&$theme) {
+  $theme['apachesolr_panels_info'] = array('arguments' => array('response' => NULL, 'search' => NULL));
 }
 
 /**
- * .
+ * Execute the search and render results.
  */
-function apachesolr_panels_search_info_content_type_render($subtype, $conf, $panel_args, $context) {
+function apachesolr_panels_apachesolr_info_content_type_render($subtype, $conf, $panel_args, $context) {
   $response = apachesolr_static_response_cache();
 
   if (empty($response)) {
     return;
   }
 
-  $search = apachesolr_panels_get_search();
+  $search = apachesolr_panels_static_search_cache();
 
   $block = new stdClass();
   $block->module  = 'apachesolr_panels';
-  $block->delta   = 'results';
+  $block->delta   = 'info';
   $block->title   = '';
-  $block->content = theme('apachesolr_panels_search_info', $response, $search);
+  $block->content = theme('apachesolr_panels_info', $response, $search);
 
   return $block;
 }
@@ -43,14 +42,14 @@ function apachesolr_panels_search_info_content_type_render($subtype, $conf, $pan
 /**
  * Empty form so we can have the default override title.
  */
-function apachesolr_panels_search_info_content_type_edit_form(&$form, &$form_state) {
+function apachesolr_panels_apachesolr_info_content_type_edit_form(&$form, &$form_state) {
   // Does nothing!
 }
 
 /**
- * .
+ * Theme search result information.
  */
-function theme_apachesolr_panels_search_info($response, $search) {
+function theme_apachesolr_panels_info($response, $search) {
   if ($total = $response->response->numFound) {
     $start = $response->response->start + 1;
     $end = $response->response->start + count($response->response->docs);
