@@ -3,12 +3,12 @@
 if (module_exists('apachesolr_search')) {
   $plugin = array(
     'single' => TRUE,
-    'title' => t('Search results'),
+    'title' => t('Apache Solr search results'),
     'icon' => 'icon_search.png',
     'description' => t('The results of an Apache Solr search.'),
+    'required context' => new ctools_context_optional(t('Context to fetch keywords from'), 'string'),
     'category' => t('Apache Solr Search'),
     'defaults' => array(
-      'keys_context' => 'none',
       'keys_action' => 'none',
       'keys' => '',
       'filters_action' => 'none',
@@ -22,7 +22,6 @@ if (module_exists('apachesolr_search')) {
       'log' => TRUE,
       'substitute' => TRUE,
     ),
-    'all contexts' => TRUE,
     'weight' => -10,
   );
 }
@@ -30,7 +29,7 @@ if (module_exists('apachesolr_search')) {
 /**
  * Render the search results.
  */
-function apachesolr_panels_apachesolr_results_content_type_render($subtype, $conf, $args, $contexts) {
+function apachesolr_panels_apachesolr_results_content_type_render($subtype, $conf, $args, $context) {
   $block = new stdClass();
   $block->module  = 'apachesolr_panels';
   $block->delta   = 'results';
@@ -41,15 +40,15 @@ function apachesolr_panels_apachesolr_results_content_type_render($subtype, $con
     'sort' => $_GET['solrsort'],
   );
 
-  if ($conf['keys_context'] != 'none' && isset($contexts[$conf['keys_context']])) {
-    $search['keys'] = $contexts[$conf['keys_context']]->data;
+  if (!empty($context) && !empty($context->data)) {
+    $search['keys'] = $context->data;
   }
 
   // Alter the search parts as per configuration.
   foreach ($search as $key => $value) {
     // Add keyword substitutions if configured to do so.
-    if ($conf[$key .'_action'] != 'none' && !empty($conf['substitute']) && !empty($contexts)) {
-      $conf[$key] = ctools_context_keyword_substitute($conf[$key], array(), $contexts);
+    if ($conf[$key .'_action'] != 'none' && !empty($conf['substitute']) && !empty($context)) {
+      $conf[$key] = ctools_context_keyword_substitute($conf[$key], array(), $context);
     }
 
     // Alter the search part depending on selected action.
@@ -96,23 +95,6 @@ function apachesolr_panels_apachesolr_results_content_type_render($subtype, $con
  */
 function apachesolr_panels_apachesolr_results_content_type_edit_form(&$form, &$form_state) {
   $conf = $form_state['conf'];
-
-  // Fetch available contexts.
-  $keys_contexts = array('none' => t('None'));
-  if (!empty($form_state['contexts'])) {
-    foreach ($form_state['contexts'] as $context) {
-      if ($context->type == 'apachesolr') {
-        $keys_contexts[$context->id] = $context->identifier;
-      }
-    }
-  }
-
-  $form['context'] = array(
-    '#title' => t('Context'),
-    '#type' => 'select',
-    '#options' => $keys_contexts,
-    '#default_value' => count($keys_contexts) > 0 ? end(array_keys($keys_contexts)) : $conf['keys_context'],
-  );
 
   $form['keys_action'] = array(
     '#title' => t('Keys'),
