@@ -97,13 +97,14 @@ function apachesolr_panels_apachesolr_results_content_type_edit_form(&$form, &$f
   $conf = $form_state['conf'];
 
   $form['keys_action'] = array(
-    '#title' => t('Keys'),
+    '#prefix' => '<div class="container-inline">',
+    '#title' => t('Keywords'),
     '#type' => 'select',
     '#options' => array(
       'none' => t('From context'),
-      'override' => t('Override keys'),
-      'append' => t('Append to keys'),
-      'fallback' => t('Fallback if no keys set'),
+      'override' => t('Override'),
+      'append' => t('Append'),
+      'fallback' => t('Fallback'),
     ),
     '#default_value' => $conf['keys_action'],
   );
@@ -114,16 +115,18 @@ function apachesolr_panels_apachesolr_results_content_type_edit_form(&$form, &$f
     '#default_value' => $conf['keys'],
     '#process' => array('ctools_dependent_process'),
     '#dependency' => array('edit-keys-action' => array('fallback', 'override', 'append')),
+    '#suffix' => '</div>',
   );
 
   $form['filters_action'] = array(
+    '#prefix' => '<div class="container-inline">',
     '#title' => t('Filters'),
     '#type' => 'select',
     '#options' => array(
       'none' => t('From URL'),
-      'override' => t('Override filters'),
-      'append' => t('Append to filters'),
-      'fallback' => t('Fallback if no filters set'),
+      'override' => t('Override'),
+      'append' => t('Append'),
+      'fallback' => t('Fallback'),
     ),
     '#default_value' => $conf['filters_action'],
   );
@@ -134,16 +137,18 @@ function apachesolr_panels_apachesolr_results_content_type_edit_form(&$form, &$f
     '#default_value' => $conf['filters'],
     '#process' => array('ctools_dependent_process'),
     '#dependency' => array('edit-filters-action' => array('fallback', 'override', 'append')),
+    '#suffix' => '</div>',
   );
 
   $form['sort_action'] = array(
+    '#prefix' => '<div class="container-inline">',
     '#title' => t('Sort'),
     '#type' => 'select',
     '#options' => array(
       'none' => t('From URL'),
-      'override' => t('Override sort'),
-      'append' => t('Append to sort'),
-      'fallback' => t('Fallback if no sort set'),
+      'override' => t('Override'),
+      'append' => t('Append'),
+      'fallback' => t('Fallback'),
     ),
     '#default_value' => $conf['sort_action'],
   );
@@ -154,6 +159,7 @@ function apachesolr_panels_apachesolr_results_content_type_edit_form(&$form, &$f
     '#default_value' => $conf['sort'],
     '#process' => array('ctools_dependent_process'),
     '#dependency' => array('edit-sort-action' => array('fallback', 'override', 'append')),
+    '#suffix' => '</div>',
   );
 
   $form['empty_override'] = array(
