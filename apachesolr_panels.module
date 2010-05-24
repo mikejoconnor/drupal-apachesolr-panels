@@ -49,8 +49,10 @@ function apachesolr_panels_search($op = 'search', $search = NULL) {
  */
 function apachesolr_panels_static_search_cache($search = NULL) {
   static $_search = array('keys' => '', 'filters' => '', 'sort' => '', 'path' => '', 'page' => 0);
+  static $_search = null;
 
   if (!empty($search)) {
+    $_search = array('keys' => '', 'filters' => '', 'sort' => '', 'path' => '', 'page' => 0);
     $_search = array_merge($_search, $search);
   }
 
