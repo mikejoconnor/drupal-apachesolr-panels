@@ -9,8 +9,6 @@
  *   Kevin Bridges (cyberswat) <http://drupal.org/user/27802>
  */
 
-module_load_include('inc', 'search', 'search.pages');
-
 /**
  * Implementation of hook_ctools_plugin_directory().
  */
@@ -23,9 +21,11 @@ function apachesolr_panels_ctools_plugin_directory($module, $plugin) {
 /**
  * Implementation of hook_search().
  */
-function apachesolr_panels_search($op = 'search', $keys = NULL) {
+function apachesolr_panels_search($op = 'search', $search = NULL) {
   if ($op == 'search') {
-    $search = apachesolr_panels_get_search();
+    // Store information about the search for use in subsequent functions.
+    apachesolr_panels_static_search_cache($search);
+
     try {
       $results = apachesolr_search_execute($search['keys'], $search['filters'], $search['sort'], $search['path'], $search['page']);
       return $results;
@@ -36,26 +36,23 @@ function apachesolr_panels_search($op = 'search', $keys = NULL) {
     }
   }
   else {
-    apachesolr_search_search($op, $keys);
+    // Let the Apache Solr module handle other operations.
+    apachesolr_search_search($op);
   }
 }
 
 /**
- * Temporarily store data about the current search.
+ * Store or fetch information about the executed search.
+ *
+ * Hold on to information about the executed search for the duration of the page
+ * request so that we can use it for things like the search form and info pane.
  */
-function apachesolr_panels_set_search($new = array()) {
-  static $data = array('keys' => '', 'filters' => '', 'sort' => '', 'path' => '', 'page' => 0);
+function apachesolr_panels_static_search_cache($search = NULL) {
+  static $_search = array('keys' => '', 'filters' => '', 'sort' => '', 'path' => '', 'page' => 0);
 
-  if (!empty($new)) {
-    $data = array_merge($data, $new);
+  if (!empty($search)) {
+    $_search = array_merge($_search, $search);
   }
 
-  return $data;
-}
-
-/**
- * Fetch data about the current search.
- */
-function apachesolr_panels_get_search() {
-  return apachesolr_panels_set_search();
+  return $_search;
 }
