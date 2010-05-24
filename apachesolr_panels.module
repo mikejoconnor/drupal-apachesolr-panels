@@ -19,25 +19,20 @@ function apachesolr_panels_ctools_plugin_directory($module, $plugin) {
 }
 
 /**
+ * Implementation of hook_forms().
+ */
+function apachesolr_panels_forms() {
+  $forms['apachesolr_panels_search_form']= array(
+    'callback' => 'search_form',
+  );
+
+  return $forms;
+}
+
+/**
  * Implementation of hook_search().
  */
 function apachesolr_panels_search($op = 'search', $search = NULL) {
-  if ($op == 'search') {
-    // Store information about the search for use in subsequent functions.
-    apachesolr_panels_static_search_cache($search);
-
-    try {
-      $results = apachesolr_search_execute($search['keys'], $search['filters'], $search['sort'], $search['path'], $search['page']);
-      return $results;
-    }
-    catch (Exception $e) {
-      watchdog('Apache Solr', nl2br(check_plain($e->getMessage())), NULL, WATCHDOG_ERROR);
-      apachesolr_failure(t('Solr search'), $search['keys']);
-    }
-  }
-  else {
-    // Let the Apache Solr module handle other operations.
-    apachesolr_search_search($op);
   switch ($op) {
     case 'name':
       return t('Apache Solr Panels');
@@ -65,12 +60,8 @@ function apachesolr_panels_search($op = 'search', $search = NULL) {
 
 /**
  * Store or fetch information about the executed search.
- *
- * Hold on to information about the executed search for the duration of the page
- * request so that we can use it for things like the search form and info pane.
  */
 function apachesolr_panels_static_search_cache($search = NULL) {
-  static $_search = array('keys' => '', 'filters' => '', 'sort' => '', 'path' => '', 'page' => 0);
   static $_search = null;
 
   if (!empty($search)) {
