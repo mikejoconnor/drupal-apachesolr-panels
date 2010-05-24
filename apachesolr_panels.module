@@ -38,6 +38,28 @@ function apachesolr_panels_search($op = 'search', $search = NULL) {
   else {
     // Let the Apache Solr module handle other operations.
     apachesolr_search_search($op);
+  switch ($op) {
+    case 'name':
+      return t('Apache Solr Panels');
+
+    case 'search':
+      // Store information about the search for use in other panes.
+      apachesolr_panels_static_search_cache($search);
+
+      try {
+        $results = apachesolr_search_execute($search['keys'], $search['filters'], $search['sort'], $search['path'], $search['page']);
+        return $results;
+      }
+      catch (Exception $e) {
+        watchdog('Apache Solr', nl2br(check_plain($e->getMessage())), NULL, WATCHDOG_ERROR);
+        apachesolr_failure(t('Solr search'), $search['keys']);
+      }
+
+      break;
+
+    default:
+      // Let the Apache Solr module handle other $ops.
+      return apachesolr_search_search($op);
   }
 }
 
