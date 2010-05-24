@@ -3,7 +3,7 @@
 if (module_exists('apachesolr_search')) {
   $plugin = array(
     'single' => TRUE,
-    'title' => t('Search info'),
+    'title' => t('Apache Solr search information'),
     'description' => t('Information about an Apache Solr search.'),
     'icon' => 'icon_search.png',
     'category' => t('Apache Solr Search'),
@@ -23,12 +23,11 @@ function apachesolr_panels_apachesolr_info_theme(&$theme) {
  */
 function apachesolr_panels_apachesolr_info_content_type_render($subtype, $conf, $panel_args, $context) {
   $response = apachesolr_static_response_cache();
+  $search = apachesolr_panels_static_search_cache();
 
-  if (empty($response)) {
+  if (empty($response) || empty($search)) {
     return;
   }
-
-  $search = apachesolr_panels_static_search_cache();
 
   $block = new stdClass();
   $block->module  = 'apachesolr_panels';
