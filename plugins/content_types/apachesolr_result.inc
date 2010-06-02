@@ -20,13 +20,13 @@ if (module_exists('apachesolr_search')) {
       'title_override' => FALSE,
       'title_override_text' => '',
       'empty_override' => FALSE,
-      'log' => TRUE,
-      'substitute' => TRUE,
       'empty_override_title' => '',
       'empty_override_text' => '',
       'empty_override_format' => FILTER_FORMAT_DEFAULT,
+      'log' => FALSE,
+      'substitute' => FALSE,
     ),
-    'weight' => -10,
+    'render first' => TRUE,
   );
 }
 
