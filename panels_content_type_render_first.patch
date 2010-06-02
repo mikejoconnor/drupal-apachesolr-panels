@@ -1,0 +1,60 @@
+Index: includes/display-render.inc
+===================================================================
+RCS file: /cvs/drupal-contrib/contributions/modules/panels/includes/display-render.inc,v
+retrieving revision 1.5.2.17
+diff -u -5 -p -r1.5.2.17 display-render.inc
+--- includes/display-render.inc	16 Mar 2010 17:58:33 -0000	1.5.2.17
++++ includes/display-render.inc	1 Jun 2010 19:14:28 -0000
+@@ -111,34 +111,46 @@ function panels_render_panes(&$display) 
+   ctools_include('content');
+ 
+   $keywords = array();
+ 
+   // First, render all the panes into little boxes. We do this here because
+-  // some panes request to be rendered after other panes (primarily so they
+-  // can do the leftovers of forms).
++  // some panes request to be rendered after or before other panes (primarily so
++  // they can do the leftovers of forms, or do some early processing that other
++  // panes rely on).
+   $panes = array();
+   $later = array();
++  $last = array();
+ 
+   foreach ((array) $display->content as $pid => $pane) {
+     $pane->shown = !empty($pane->shown); // guarantee this field exists.
+     // If the user can't see this pane, do not render it.
+     if (!$pane->shown || !panels_pane_access($pane, $display)) {
+       continue;
+     }
+ 
+-    // If this pane wants to render last, add it to the $later array.
+     $content_type = ctools_get_content_type($pane->type);
+ 
+-    if (!empty($content_type['render last'])) {
++    // If this pane wants to be rendered first, render it now. Otherwise move it
++    // to an array for rendering $later, or $last if that was requested.
++    if (!empty($content_type['render first'])) {
++      $panes[$pid] = panels_render_pane_content($display, $pane, $keywords);
++    }
++    elseif (!empty($content_type['render last'])) {
++      $last[$pid] = $pane;
++    }
++    else {
+       $later[$pid] = $pane;
+-      continue;
+     }
++  }
+ 
++  // Render panes not set to be rendered first or last.
++  foreach ($later as $pid => $pane) {
+     $panes[$pid] = panels_render_pane_content($display, $pane, $keywords);
+   }
+ 
+-  foreach ($later as $pid => $pane) {
++  // Render panes that want to be rendered last.
++  foreach ($last as $pid => $pane) {
+     $panes[$pid] = panels_render_pane_content($display, $pane, $keywords);
+   }
+ 
+   // Loop through all panels, put all panes that belong to the current panel
+   // in an array, then render the panel. Primarily this ensures that the
