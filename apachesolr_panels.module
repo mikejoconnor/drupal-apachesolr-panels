@@ -4,7 +4,7 @@
  * @file
  * Integrates Apache Solr Search with Panels.
  *
- * Author:
+ * Authors:
  *   Joakim Stai (ximo) <http://drupal.org/user/88701)
  *   Kevin Bridges (cyberswat) <http://drupal.org/user/27802>
  */
@@ -49,7 +49,6 @@ function apachesolr_panels_search($op = 'search', $search = NULL) {
         watchdog('Apache Solr', nl2br(check_plain($e->getMessage())), NULL, WATCHDOG_ERROR);
         apachesolr_failure(t('Solr search'), $search['keys']);
       }
-
       break;
 
     default:
@@ -60,9 +59,11 @@ function apachesolr_panels_search($op = 'search', $search = NULL) {
 
 /**
  * Store or fetch information about the executed search.
+ *
+ * This is used by panes other than the results pane to act on the search.
  */
 function apachesolr_panels_static_search_cache($search = NULL) {
-  static $_search = null;
+  static $_search = NULL;
 
   if (!empty($search)) {
     $_search = array('keys' => '', 'filters' => '', 'sort' => '', 'path' => '', 'page' => 0);

@@ -35,8 +35,8 @@ if (module_exists('apachesolr_search')) {
  */
 function apachesolr_panels_apachesolr_result_content_type_render($subtype, $conf, $args, $context) {
   $block = new stdClass();
-  $block->module  = 'apachesolr_panels';
-  $block->delta   = 'results';
+  $block->module = 'apachesolr_panels';
+  $block->delta = 'results';
 
   $search = array(
     'keys' => '',
@@ -78,6 +78,7 @@ function apachesolr_panels_apachesolr_result_content_type_render($subtype, $conf
   }
 
   // Execute the search.
+  $results = NULL;
   if ($search['keys'] || $conf['keys_allow_empty']) {
     $results = search_data($search, 'apachesolr_panels');
   }
