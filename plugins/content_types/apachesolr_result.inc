@@ -49,14 +49,17 @@ function apachesolr_panels_apachesolr_result_content_type_render($subtype, $conf
     $search['keys'] = $context->data;
   }
 
-  // Alter the search parts as per configuration.
+  $display = panels_get_current_page_display();
+
+  // Alter the search parts to use substitutions, and override, append or use
+  // a fallback depending on the setting for each part.
   foreach ($search as $key => $value) {
-    // Add keyword substitutions if configured to do so.
-    if ($conf[$key .'_action'] != 'none' && !empty($conf['substitute']) && !empty($context)) {
-      $conf[$key] = ctools_context_keyword_substitute($conf[$key], array(), $context);
+    // Substitute keywords.
+    if ($conf[$key .'_action'] != 'none' && !empty($conf['substitute']) && !empty($display->context)) {
+      $conf[$key] = ctools_context_keyword_substitute($conf[$key], array(), $display->context);
     }
 
-    // Alter the search part depending on selected action.
+    // Alter the search part using the selected action.
     if ($conf[$key .'_action'] == 'append') {
       $search[$key] .= ' '. $conf[$key];
     }
