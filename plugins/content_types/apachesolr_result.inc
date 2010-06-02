@@ -12,6 +12,7 @@ if (module_exists('apachesolr_search')) {
     'defaults' => array(
       'keys_action' => 'none',
       'keys' => '',
+      'keys_allow_empty' => TRUE,
       'filters_action' => 'none',
       'filters' => '',
       'sort_action' => 'none',
@@ -43,6 +44,7 @@ function apachesolr_panels_apachesolr_result_content_type_render($subtype, $conf
     'sort' => $_GET['solrsort'],
   );
 
+  // Use keys from the selected context if set to do so.
   if (!empty($context) && !empty($context->data)) {
     $search['keys'] = $context->data;
   }
@@ -73,7 +75,9 @@ function apachesolr_panels_apachesolr_result_content_type_render($subtype, $conf
   }
 
   // Execute the search.
-  $results = search_data($search, 'apachesolr_panels');
+  if ($search['keys'] || $conf['keys_allow_empty']) {
+    $results = search_data($search, 'apachesolr_panels');
+  }
 
   // Add the title and results, or any overrides.
   if ($results) {
@@ -124,6 +128,12 @@ function apachesolr_panels_apachesolr_result_content_type_edit_form(&$form, &$fo
     '#default_value' => $conf['keys'],
     '#process' => array('ctools_dependent_process'),
     '#dependency' => array('edit-keys-action' => array('fallback', 'override', 'append')),
+  );
+
+  $form['keys_allow_empty'] = array(
+    '#title' => t('Allow empty'),
+    '#type' => 'checkbox',
+    '#default_value' => $conf['keys_allow_empty'],
     '#suffix' => '</div>',
   );
 
