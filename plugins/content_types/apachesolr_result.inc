@@ -3,6 +3,7 @@
 if (module_exists('apachesolr_search')) {
   $plugin = array(
     'single' => TRUE,
+    'no title override' => TRUE,
     'title' => t('Apache Solr search results'),
     'icon' => 'icon_search.png',
     'description' => t('The results of an Apache Solr search.'),
@@ -15,12 +16,14 @@ if (module_exists('apachesolr_search')) {
       'filters' => '',
       'sort_action' => 'none',
       'sort' => '',
+      'title_override' => FALSE,
+      'title_override_text' => '',
       'empty_override' => FALSE,
-      'empty_title' => '',
-      'empty' => '',
-      'empty_format' => FILTER_FORMAT_DEFAULT,
       'log' => TRUE,
       'substitute' => TRUE,
+      'empty_override_title' => '',
+      'empty_override_text' => '',
+      'empty_override_format' => FILTER_FORMAT_DEFAULT,
     ),
     'weight' => -10,
   );
@@ -72,8 +75,14 @@ function apachesolr_panels_apachesolr_result_content_type_render($subtype, $conf
   // Execute the search.
   $results = search_data($search, 'apachesolr_panels');
 
+  // Add the title and results, or any overrides.
   if ($results) {
-    $block->title = t('Search results');
+    if (!empty($conf['title_override'])) {
+      $block->title = $conf['title_override_text'];
+    }
+    else {
+      $block->title = t('Search results');
+    }
     $block->content = $results;
   }
   else {
@@ -82,8 +91,8 @@ function apachesolr_panels_apachesolr_result_content_type_render($subtype, $conf
       $block->content = search_help('search#noresults', drupal_help_arg());
     }
     else {
-      $block->title = $conf['empty_title'];
-      $block->content = check_markup($conf['empty'], $conf['empty_format'], FALSE);
+      $block->title = $conf['empty_override_title'];
+      $block->content = check_markup($conf['empty_override_text'], $conf['empty_override_format'], FALSE);
     }
   }
 
@@ -97,7 +106,7 @@ function apachesolr_panels_apachesolr_result_content_type_edit_form(&$form, &$fo
   $conf = $form_state['conf'];
 
   $form['keys_action'] = array(
-    '#prefix' => '<div class="container-inline">',
+    '#prefix' => '<div class="form-item container-inline">',
     '#title' => t('Keywords'),
     '#type' => 'select',
     '#options' => array(
@@ -119,7 +128,7 @@ function apachesolr_panels_apachesolr_result_content_type_edit_form(&$form, &$fo
   );
 
   $form['filters_action'] = array(
-    '#prefix' => '<div class="container-inline">',
+    '#prefix' => '<div class="form-item container-inline">',
     '#title' => t('Filters'),
     '#type' => 'select',
     '#options' => array(
@@ -141,7 +150,7 @@ function apachesolr_panels_apachesolr_result_content_type_edit_form(&$form, &$fo
   );
 
   $form['sort_action'] = array(
-    '#prefix' => '<div class="container-inline">',
+    '#prefix' => '<div class="form-item container-inline">',
     '#title' => t('Sort'),
     '#type' => 'select',
     '#options' => array(
@@ -162,40 +171,57 @@ function apachesolr_panels_apachesolr_result_content_type_edit_form(&$form, &$fo
     '#suffix' => '</div>',
   );
 
+  $form['title_override'] = array(
+    '#prefix' => '<div class="form-item container-inline">',
+    '#title' => t('Override title'),
+    '#type' => 'checkbox',
+    '#default_value' => $conf['title_override'],
+  );
+
+  $form['title_override_text'] = array(
+    '#type' => 'textfield',
+    '#default_value' => $conf['title_override_text'],
+    '#size' => 35,
+    '#process' => array('ctools_dependent_process'),
+    '#dependency' => array('edit-title-override' => array(1)),
+    '#dependency_type' => 'disable',
+    '#suffix' => '</div>',
+  );
+
   $form['empty_override'] = array(
     '#title' => t('Override "no result" text'),
     '#type' => 'checkbox',
     '#default_value' => $conf['empty_override'],
   );
 
-  $form['empty_field']['empty_title'] = array(
+  $form['empty_override_field']['empty_override_title'] = array(
     '#title' => t('Title'),
     '#type' => 'textfield',
-    '#default_value' => $conf['empty_title'],
+    '#default_value' => $conf['empty_override_title'],
     '#process' => array('ctools_dependent_process'),
     '#dependency' => array('edit-empty-override' => array(1)),
   );
 
-  $form['empty_field']['empty'] = array(
+  $form['empty_override_field']['empty_override_text'] = array(
     '#title' => t('No result text'),
     '#type' => 'textarea',
-    '#default_value' => $conf['empty'],
+    '#default_value' => $conf['empty_override_text'],
     '#process' => array('ctools_dependent_process'),
     '#dependency' => array('edit-empty-override' => array(1)),
   );
 
-  $form['empty_field']['format_prefix'] = array(
+  $form['empty_override_field']['format_prefix'] = array(
     '#type' => 'hidden',
-    '#id' => 'edit-empty-format',
-    '#prefix' => '<div><fieldset id="edit-empty-format" class="collapsed collapsible"><legend>' . t('Input format') . '</legend>',
+    '#id' => 'edit-empty-override-format',
     '#process' => array('ctools_dependent_process'),
     '#dependency' => array('edit-empty-override' => array(1)),
+    '#prefix' => '<div><fieldset id="edit-empty-override-format" class="collapsed collapsible"><legend>' . t('Input format') . '</legend>',
   );
   // Yes, lots of gymnastics to make this fieldset work with dependencies.
-  $form['empty_field']['empty_format'] = filter_form($conf['empty_format'], NULL, array('empty_format'));
-  unset($form['empty_field']['empty_format']['#type']);
+  $form['empty_override_field']['empty_override_format'] = filter_form($conf['empty_override_format'], NULL, array('empty_override_format'));
+  unset($form['empty_override_field']['empty_override_format']['#type']);
 
-  $form['empty_field']['format_suffix'] = array(
+  $form['empty_override_field']['format_suffix'] = array(
     '#value' => '</fieldset></div>',
   );
 
